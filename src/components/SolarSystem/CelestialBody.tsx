@@ -1,6 +1,6 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Sphere, Ring } from '@react-three/drei';
+import { Sphere, Ring, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { CelestialBody as CelestialBodyType } from '@/data/celestialBodies';
 import { getVisualSize, getOrbitalPosition } from '@/data/astronomyUtils';
@@ -362,6 +362,21 @@ const CelestialBodyComponent = ({
           </Ring>
         </>
       )}
+      
+      {/* Planet name label */}
+      <Html
+        position={[0, size * 1.8, 0]}
+        center
+        distanceFactor={15}
+        style={{
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        <div className="text-white text-xs font-medium px-2 py-0.5 bg-black/50 rounded backdrop-blur-sm whitespace-nowrap">
+          {body.name}
+        </div>
+      </Html>
     </group>
   );
 };
