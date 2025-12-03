@@ -1,6 +1,6 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Sphere } from '@react-three/drei';
+import { Sphere, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { SUN } from '@/data/celestialBodies';
 import { getVisualSize } from '@/data/astronomyUtils';
@@ -157,6 +157,21 @@ const Sun = ({ onClick, isSelected, useRealisticScale }: SunProps) => {
           />
         </Sphere>
       )}
+      
+      {/* Sun label */}
+      <Html
+        position={[0, size * 2.5, 0]}
+        center
+        distanceFactor={15}
+        style={{
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        <div className="text-white text-xs font-medium px-2 py-0.5 bg-black/50 rounded backdrop-blur-sm whitespace-nowrap">
+          Sun
+        </div>
+      </Html>
     </group>
   );
 };
