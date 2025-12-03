@@ -21,9 +21,9 @@ export interface CelestialBody {
 
 // Scale factors for visualization
 export const SCALE = {
-  DISTANCE: 15, // AU to scene units (increased for more spacing)
+  DISTANCE: 30, // AU to scene units (increased for realistic spacing)
   SIZE: 0.00001, // km to scene units
-  MOON_DISTANCE: 0.00003, // km to scene units for moons (increased for visibility)
+  MOON_DISTANCE: 0.00005, // km to scene units for moons (increased for visibility)
   TIME: 1,
 };
 
