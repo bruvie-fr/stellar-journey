@@ -8,9 +8,11 @@ import Starfield from './Starfield';
 import { 
   PLANETS, 
   DWARF_PLANETS, 
-  getMoonsForParent 
+  getMoonsForParent,
+  getVisualSize,
 } from '@/data/celestialBodies';
 import { getOrbitalPosition } from '@/data/astronomyUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SceneProps {
   date: Date;
@@ -41,6 +43,8 @@ const SolarSystemScene = ({
   showDwarfPlanets,
   labelSize
 }: SceneProps) => {
+  const isMobile = useIsMobile();
+  
   const planetPositions = useMemo(() => {
     const positions: Record<string, [number, number, number]> = {};
     [...PLANETS, ...DWARF_PLANETS].forEach(planet => {
@@ -49,8 +53,21 @@ const SolarSystemScene = ({
     return positions;
   }, [date]);
 
+  // Calculate parent visual sizes for collision prevention
+  const parentVisualSizes = useMemo(() => {
+    const sizes: Record<string, number> = {};
+    PLANETS.forEach(planet => {
+      sizes[planet.id] = getVisualSize(planet, useRealisticScale);
+    });
+    return sizes;
+  }, [useRealisticScale]);
+
   return (
-    <Canvas className="w-full h-full" gl={{ antialias: true, alpha: true }}>
+    <Canvas 
+      className="w-full h-full touch-none" 
+      gl={{ antialias: !isMobile, alpha: true }}
+      dpr={isMobile ? [1, 1.5] : [1, 2]}
+    >
       <PerspectiveCamera makeDefault position={[0, 80, 150]} fov={60} />
       <OrbitControls
         enablePan
@@ -58,19 +75,30 @@ const SolarSystemScene = ({
         enableRotate
         minDistance={5}
         maxDistance={600}
-        zoomSpeed={0.5}
-        rotateSpeed={0.5}
-        panSpeed={0.5}
+        zoomSpeed={isMobile ? 0.3 : 0.5}
+        rotateSpeed={isMobile ? 0.3 : 0.5}
+        panSpeed={isMobile ? 0.3 : 0.5}
+        touches={{
+          ONE: 1, // ROTATE
+          TWO: 2, // DOLLY_PAN
+        }}
       />
       
-      {/* Ambient light for visibility */}
-      <ambientLight intensity={0.08} />
+      {/* Very dim ambient for dark side visibility */}
+      <ambientLight intensity={0.02} color="#4a5568" />
       
-      {/* Background stars using drei */}
+      {/* Hemisphere light for subtle environmental lighting */}
+      <hemisphereLight 
+        intensity={0.03} 
+        color="#ffffff" 
+        groundColor="#1a1a2e" 
+      />
+      
+      {/* Background stars - reduced count on mobile */}
       <Stars
         radius={300}
         depth={60}
-        count={8000}
+        count={isMobile ? 4000 : 8000}
         factor={6}
         saturation={0.1}
         fade
@@ -80,7 +108,7 @@ const SolarSystemScene = ({
       <Suspense fallback={<Loader />}>
         <Starfield />
         
-        {/* Sun */}
+        {/* Sun with main light source */}
         <Sun
           onClick={() => onSelectBody('sun')}
           isSelected={selectedBodyId === 'sun'}
@@ -124,6 +152,7 @@ const SolarSystemScene = ({
                   useRealisticScale={useRealisticScale}
                   parentPosition={planetPositions[planet.id]}
                   labelSize={labelSize}
+                  parentVisualSize={parentVisualSizes[planet.id]}
                 />
               </group>
             ))}

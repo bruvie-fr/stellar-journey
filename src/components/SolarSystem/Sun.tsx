@@ -91,7 +91,7 @@ const Sun = ({ onClick, isSelected, useRealisticScale, labelSize }: SunProps) =>
 
   return (
     <group position={[0, 0, 0]}>
-      {/* Core sun */}
+      {/* Core sun - using basic material since it's self-lit */}
       <Sphere
         ref={meshRef}
         args={[size, 64, 64]}
@@ -143,9 +143,22 @@ const Sun = ({ onClick, isSelected, useRealisticScale, labelSize }: SunProps) =>
         />
       </Sphere>
       
-      {/* Point light */}
-      <pointLight intensity={3} distance={600} decay={2} color="#FFF5E0" />
-      <pointLight intensity={1} distance={800} decay={2} color="#FFA500" />
+      {/* Main directional light from sun - creates realistic lighting on planets */}
+      <pointLight 
+        intensity={4} 
+        distance={800} 
+        decay={1.5} 
+        color="#FFF5E0" 
+        castShadow={false}
+      />
+      
+      {/* Secondary warm light */}
+      <pointLight 
+        intensity={1.5} 
+        distance={1000} 
+        decay={2} 
+        color="#FFA500" 
+      />
       
       {/* Selection indicator */}
       {isSelected && (

@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -16,6 +15,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ALL_BODIES, CelestialBody } from '@/data/celestialBodies';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SearchBarProps {
   onSelect: (id: string) => void;
@@ -24,6 +24,7 @@ interface SearchBarProps {
 const SearchBar = ({ onSelect }: SearchBarProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const isMobile = useIsMobile();
 
   const groupedBodies = useMemo(() => {
     const groups: Record<string, CelestialBody[]> = {
@@ -51,20 +52,28 @@ const SearchBar = ({ onSelect }: SearchBarProps) => {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="w-48 justify-start gap-2 bg-background/80 backdrop-blur-lg border-border/50"
+          className={`justify-start gap-2 bg-background/80 backdrop-blur-lg border-border/50 ${
+            isMobile ? 'w-full h-11' : 'w-48'
+          }`}
         >
           <Search className="h-4 w-4" />
           <span className="text-muted-foreground">Search planets...</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-0 bg-background/95 backdrop-blur-lg border-border/50">
+      <PopoverContent 
+        className={`p-0 bg-background/95 backdrop-blur-lg border-border/50 ${
+          isMobile ? 'w-[calc(100vw-32px)]' : 'w-64'
+        }`}
+        align={isMobile ? 'center' : 'start'}
+      >
         <Command>
           <CommandInput 
             placeholder="Search celestial bodies..." 
             value={search}
             onValueChange={setSearch}
+            className="h-11"
           />
-          <CommandList>
+          <CommandList className={isMobile ? 'max-h-[50vh]' : ''}>
             <CommandEmpty>No results found.</CommandEmpty>
             
             <CommandGroup heading="Star">
@@ -73,10 +82,10 @@ const SearchBar = ({ onSelect }: SearchBarProps) => {
                   key={body.id}
                   value={body.name}
                   onSelect={() => handleSelect(body.id)}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${isMobile ? 'min-h-[44px] py-3' : ''}`}
                 >
                   <span
-                    className="w-3 h-3 rounded-full mr-2"
+                    className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
                     style={{ backgroundColor: body.color }}
                   />
                   {body.name}
@@ -90,10 +99,10 @@ const SearchBar = ({ onSelect }: SearchBarProps) => {
                   key={body.id}
                   value={body.name}
                   onSelect={() => handleSelect(body.id)}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${isMobile ? 'min-h-[44px] py-3' : ''}`}
                 >
                   <span
-                    className="w-3 h-3 rounded-full mr-2"
+                    className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
                     style={{ backgroundColor: body.color }}
                   />
                   {body.name}
@@ -107,10 +116,10 @@ const SearchBar = ({ onSelect }: SearchBarProps) => {
                   key={body.id}
                   value={body.name}
                   onSelect={() => handleSelect(body.id)}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${isMobile ? 'min-h-[44px] py-3' : ''}`}
                 >
                   <span
-                    className="w-3 h-3 rounded-full mr-2"
+                    className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
                     style={{ backgroundColor: body.color }}
                   />
                   {body.name}
@@ -124,10 +133,10 @@ const SearchBar = ({ onSelect }: SearchBarProps) => {
                   key={body.id}
                   value={body.name}
                   onSelect={() => handleSelect(body.id)}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${isMobile ? 'min-h-[44px] py-3' : ''}`}
                 >
                   <span
-                    className="w-3 h-3 rounded-full mr-2"
+                    className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
                     style={{ backgroundColor: body.color }}
                   />
                   {body.name}
