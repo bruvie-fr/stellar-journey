@@ -11,6 +11,7 @@ export const useSolarSystem = () => {
   const [showMoons, setShowMoons] = useState(true);
   const [showDwarfPlanets, setShowDwarfPlanets] = useState(true);
   const [useRealisticScale, setUseRealisticScale] = useState(false);
+  const [labelSize, setLabelSize] = useState(14);
 
   // Update selected body when ID changes
   useEffect(() => {
@@ -64,5 +65,7 @@ export const useSolarSystem = () => {
     setShowDwarfPlanets,
     useRealisticScale,
     setUseRealisticScale,
+    labelSize,
+    setLabelSize,
   };
 };

@@ -20,6 +20,7 @@ interface SceneProps {
   showOrbits: boolean;
   showMoons: boolean;
   showDwarfPlanets: boolean;
+  labelSize: number;
 }
 
 // Loading component
@@ -37,7 +38,8 @@ const SolarSystemScene = ({
   useRealisticScale,
   showOrbits,
   showMoons,
-  showDwarfPlanets
+  showDwarfPlanets,
+  labelSize
 }: SceneProps) => {
   const planetPositions = useMemo(() => {
     const positions: Record<string, [number, number, number]> = {};
@@ -83,6 +85,7 @@ const SolarSystemScene = ({
           onClick={() => onSelectBody('sun')}
           isSelected={selectedBodyId === 'sun'}
           useRealisticScale={useRealisticScale}
+          labelSize={labelSize}
         />
         
         {/* Planets */}
@@ -100,6 +103,7 @@ const SolarSystemScene = ({
               onClick={() => onSelectBody(planet.id)}
               isSelected={selectedBodyId === planet.id}
               useRealisticScale={useRealisticScale}
+              labelSize={labelSize}
             />
             
             {/* Moons */}
@@ -119,6 +123,7 @@ const SolarSystemScene = ({
                   isSelected={selectedBodyId === moon.id}
                   useRealisticScale={useRealisticScale}
                   parentPosition={planetPositions[planet.id]}
+                  labelSize={labelSize}
                 />
               </group>
             ))}
@@ -140,6 +145,7 @@ const SolarSystemScene = ({
               onClick={() => onSelectBody(dwarf.id)}
               isSelected={selectedBodyId === dwarf.id}
               useRealisticScale={useRealisticScale}
+              labelSize={labelSize}
             />
           </group>
         ))}

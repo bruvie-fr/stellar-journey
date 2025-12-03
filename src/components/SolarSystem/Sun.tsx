@@ -9,6 +9,7 @@ interface SunProps {
   onClick: () => void;
   isSelected: boolean;
   useRealisticScale: boolean;
+  labelSize: number;
 }
 
 // Create procedural sun texture
@@ -52,7 +53,7 @@ const createSunTexture = (): THREE.CanvasTexture => {
   return texture;
 };
 
-const Sun = ({ onClick, isSelected, useRealisticScale }: SunProps) => {
+const Sun = ({ onClick, isSelected, useRealisticScale, labelSize }: SunProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const glow1Ref = useRef<THREE.Mesh>(null);
   const glow2Ref = useRef<THREE.Mesh>(null);
@@ -168,7 +169,10 @@ const Sun = ({ onClick, isSelected, useRealisticScale }: SunProps) => {
           userSelect: 'none',
         }}
       >
-        <div className="text-white text-xs font-medium px-2 py-0.5 bg-black/50 rounded backdrop-blur-sm whitespace-nowrap">
+        <div 
+          className="text-white font-medium px-2 py-0.5 bg-black/50 rounded backdrop-blur-sm whitespace-nowrap"
+          style={{ fontSize: `${labelSize}px` }}
+        >
           Sun
         </div>
       </Html>
