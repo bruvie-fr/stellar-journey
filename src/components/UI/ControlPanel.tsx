@@ -116,8 +116,8 @@ const ControlPanel = ({
               value={[labelSize]}
               onValueChange={([value]) => setLabelSize(value)}
               min={10}
-              max={24}
-              step={1}
+              max={200}
+              step={2}
               className="w-full"
             />
           </div>
