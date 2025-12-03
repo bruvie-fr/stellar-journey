@@ -8,7 +8,7 @@ export const getMeanAnomaly = (
 ): number => {
   const daysSinceEpoch = (date.getTime() - epoch.getTime()) / (1000 * 60 * 60 * 24);
   const meanAnomaly = (360 * daysSinceEpoch) / Math.abs(orbitalPeriod);
-  return meanAnomaly % 360;
+  return ((meanAnomaly % 360) + 360) % 360; // Normalize to 0-360
 };
 
 // Calculate eccentric anomaly using Newton's method
@@ -32,7 +32,75 @@ export const getTrueAnomaly = (eccentricAnomaly: number, eccentricity: number): 
   return trueAnomaly;
 };
 
-// Get orbital position in 3D space
+// Get true anomaly in degrees for a body at a given date
+export const getTrueAnomalyDegrees = (body: CelestialBody, date: Date): number => {
+  if (body.id === 'sun') return 0;
+  const meanAnomaly = getMeanAnomaly(body.orbitalPeriod, date);
+  const eccentricAnomaly = getEccentricAnomaly(meanAnomaly, body.eccentricity);
+  const trueAnomaly = getTrueAnomaly(eccentricAnomaly, body.eccentricity);
+  const degrees = (trueAnomaly * 180) / Math.PI;
+  return ((degrees % 360) + 360) % 360;
+};
+
+// Get mean anomaly in degrees for display
+export const getMeanAnomalyDegrees = (body: CelestialBody, date: Date): number => {
+  if (body.id === 'sun') return 0;
+  return getMeanAnomaly(body.orbitalPeriod, date);
+};
+
+// Calculate ecliptic longitude (heliocentric longitude)
+export const getEclipticLongitude = (body: CelestialBody, date: Date): number => {
+  if (body.id === 'sun') return 0;
+  
+  // Simplified calculation - true anomaly + argument of perihelion
+  const trueAnomaly = getTrueAnomalyDegrees(body, date);
+  // Approximate argument of perihelion based on body
+  const argumentOfPerihelion = getArgumentOfPerihelion(body.id);
+  
+  return ((trueAnomaly + argumentOfPerihelion) % 360 + 360) % 360;
+};
+
+// Get argument of perihelion for planets (in degrees)
+export const getArgumentOfPerihelion = (bodyId: string): number => {
+  const values: Record<string, number> = {
+    mercury: 29.12,
+    venus: 54.85,
+    earth: 114.21,
+    mars: 286.50,
+    jupiter: 273.87,
+    saturn: 339.39,
+    uranus: 96.99,
+    neptune: 273.19,
+    pluto: 113.76,
+    ceres: 73.60,
+    eris: 151.43,
+    makemake: 297.24,
+    haumea: 239.18,
+  };
+  return values[bodyId] || 0;
+};
+
+// Get longitude of ascending node for planets (in degrees)
+export const getLongitudeOfAscendingNode = (bodyId: string): number => {
+  const values: Record<string, number> = {
+    mercury: 48.33,
+    venus: 76.68,
+    earth: 348.74,
+    mars: 49.56,
+    jupiter: 100.46,
+    saturn: 113.64,
+    uranus: 74.01,
+    neptune: 131.78,
+    pluto: 110.30,
+    ceres: 80.33,
+    eris: 35.87,
+    makemake: 79.38,
+    haumea: 121.90,
+  };
+  return values[bodyId] || 0;
+};
+
+// Get orbital position in 3D space with collision prevention
 export const getOrbitalPosition = (
   body: CelestialBody,
   date: Date,
@@ -46,11 +114,23 @@ export const getOrbitalPosition = (
   const eccentricAnomaly = getEccentricAnomaly(meanAnomaly, body.eccentricity);
   const trueAnomaly = getTrueAnomaly(eccentricAnomaly, body.eccentricity);
 
-  // Calculate distance from focus
-  // Use MOON_DISTANCE scale for moons to make them visible around planets
-  const a = body.type === 'moon' 
-    ? body.distanceFromSun * SCALE.MOON_DISTANCE
-    : body.distanceFromSun * SCALE.DISTANCE;
+  // Calculate distance from focus with collision prevention for moons
+  let a: number;
+  if (body.type === 'moon') {
+    // Base distance for moon
+    a = body.distanceFromSun * SCALE.MOON_DISTANCE;
+    
+    // Ensure minimum safe distance based on visual sizes
+    const moonScale = VISIBILITY_SCALE[body.id] || 200;
+    const parentScale = VISIBILITY_SCALE[body.parentId || ''] || 100;
+    const minSafeDistance = (moonScale + parentScale) * body.radius * SCALE.SIZE * 3;
+    
+    if (a < minSafeDistance) {
+      a = minSafeDistance;
+    }
+  } else {
+    a = body.distanceFromSun * SCALE.DISTANCE;
+  }
   
   const r = a * (1 - body.eccentricity * Math.cos(eccentricAnomaly));
 
@@ -72,12 +152,12 @@ export const getOrbitalPosition = (
   ];
 };
 
-// Get the visual size for rendering
+// Get the visual size for rendering with collision-safe constraints
 export const getVisualSize = (body: CelestialBody, useRealisticScale: boolean): number => {
   const baseSize = body.radius * SCALE.SIZE;
   
   if (useRealisticScale) {
-    return baseSize * 100; // Still need some scaling for visibility
+    return baseSize * 100;
   }
   
   const multiplier = VISIBILITY_SCALE[body.id] || 100;
@@ -115,6 +195,98 @@ export const formatScientific = (num: number): string => {
 // Convert date to Julian Date
 export const toJulianDate = (date: Date): number => {
   return date.getTime() / 86400000 + 2440587.5;
+};
+
+// Get day of year (1-365)
+const getDayOfYear = (date: Date): number => {
+  const start = new Date(date.getFullYear(), 0, 0);
+  const diff = date.getTime() - start.getTime();
+  const oneDay = 1000 * 60 * 60 * 24;
+  return Math.floor(diff / oneDay);
+};
+
+// Calculate the subsolar point (where Sun is directly overhead on Earth)
+export const getSubsolarPoint = (date: Date): { latitude: number; longitude: number } => {
+  // Get UTC time components
+  const utcHours = date.getUTCHours();
+  const utcMinutes = date.getUTCMinutes();
+  const utcSeconds = date.getUTCSeconds();
+  
+  // Calculate solar longitude (where it's solar noon)
+  // At 12:00 UTC, solar noon is at 0° longitude
+  // Earth rotates 15° per hour
+  const decimalHours = utcHours + utcMinutes / 60 + utcSeconds / 3600;
+  let solarLongitude = (12 - decimalHours) * 15;
+  
+  // Normalize to -180 to 180
+  while (solarLongitude > 180) solarLongitude -= 360;
+  while (solarLongitude < -180) solarLongitude += 360;
+  
+  // Calculate solar declination (latitude where Sun is overhead)
+  // This varies between +23.44° (summer solstice) and -23.44° (winter solstice)
+  const dayOfYear = getDayOfYear(date);
+  // Day 172 is approximately June 21 (summer solstice in Northern Hemisphere)
+  const solarLatitude = 23.44 * Math.sin((2 * Math.PI / 365) * (dayOfYear - 81));
+  
+  return {
+    latitude: solarLatitude,
+    longitude: solarLongitude
+  };
+};
+
+// Region data with longitude ranges
+const REGIONS: { name: string; lonStart: number; lonEnd: number; latStart: number; latEnd: number }[] = [
+  { name: 'Japan', lonStart: 129, lonEnd: 146, latStart: 24, latEnd: 46 },
+  { name: 'Australia', lonStart: 113, lonEnd: 154, latStart: -44, latEnd: -10 },
+  { name: 'Indonesia', lonStart: 95, lonEnd: 141, latStart: -11, latEnd: 6 },
+  { name: 'China', lonStart: 73, lonEnd: 135, latStart: 18, latEnd: 54 },
+  { name: 'India', lonStart: 68, lonEnd: 97, latStart: 6, latEnd: 36 },
+  { name: 'Russia', lonStart: 27, lonEnd: 180, latStart: 41, latEnd: 82 },
+  { name: 'Middle East', lonStart: 25, lonEnd: 63, latStart: 12, latEnd: 42 },
+  { name: 'Europe', lonStart: -10, lonEnd: 40, latStart: 35, latEnd: 72 },
+  { name: 'UK', lonStart: -8, lonEnd: 2, latStart: 50, latEnd: 61 },
+  { name: 'West Africa', lonStart: -18, lonEnd: 16, latStart: 4, latEnd: 28 },
+  { name: 'East Africa', lonStart: 22, lonEnd: 52, latStart: -12, latEnd: 18 },
+  { name: 'South Africa', lonStart: 16, lonEnd: 33, latStart: -35, latEnd: -22 },
+  { name: 'Brazil', lonStart: -74, lonEnd: -34, latStart: -34, latEnd: 6 },
+  { name: 'Argentina', lonStart: -74, lonEnd: -53, latStart: -56, latEnd: -21 },
+  { name: 'Eastern US', lonStart: -87, lonEnd: -66, latStart: 24, latEnd: 49 },
+  { name: 'Central US', lonStart: -105, lonEnd: -87, latStart: 26, latEnd: 49 },
+  { name: 'Western US', lonStart: -125, lonEnd: -105, latStart: 32, latEnd: 49 },
+  { name: 'Canada', lonStart: -141, lonEnd: -52, latStart: 42, latEnd: 84 },
+  { name: 'Mexico', lonStart: -118, lonEnd: -86, latStart: 14, latEnd: 33 },
+  { name: 'New Zealand', lonStart: 166, lonEnd: 179, latStart: -47, latEnd: -34 },
+  { name: 'Hawaii', lonStart: -161, lonEnd: -154, latStart: 18, latEnd: 23 },
+  { name: 'Alaska', lonStart: -180, lonEnd: -130, latStart: 51, latEnd: 72 },
+];
+
+// Get regions currently in daylight, twilight, and night
+export const getSunlitRegions = (date: Date): { daylight: string[]; twilight: string[]; night: string[] } => {
+  const subsolar = getSubsolarPoint(date);
+  const daylight: string[] = [];
+  const twilight: string[] = [];
+  const night: string[] = [];
+  
+  REGIONS.forEach(region => {
+    const regionCenterLon = (region.lonStart + region.lonEnd) / 2;
+    const regionCenterLat = (region.latStart + region.latEnd) / 2;
+    
+    // Calculate angular distance from subsolar point
+    let lonDiff = Math.abs(regionCenterLon - subsolar.longitude);
+    if (lonDiff > 180) lonDiff = 360 - lonDiff;
+    
+    // Simple day/night calculation based on longitude difference
+    // Daylight within ~90° of subsolar longitude, twilight within ~108°
+    if (lonDiff < 75) {
+      daylight.push(region.name);
+    } else if (lonDiff < 100) {
+      twilight.push(region.name);
+    } else {
+      night.push(region.name);
+    }
+  });
+  
+  return { daylight, twilight, night };
 };
 
 // Preset dates for quick navigation

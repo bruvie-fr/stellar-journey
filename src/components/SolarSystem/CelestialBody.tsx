@@ -2,7 +2,7 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Sphere, Ring, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { CelestialBody as CelestialBodyType } from '@/data/celestialBodies';
+import { CelestialBody as CelestialBodyType, SCALE, VISIBILITY_SCALE } from '@/data/celestialBodies';
 import { getVisualSize, getOrbitalPosition } from '@/data/astronomyUtils';
 
 interface CelestialBodyProps {
@@ -13,6 +13,7 @@ interface CelestialBodyProps {
   useRealisticScale: boolean;
   parentPosition?: [number, number, number];
   labelSize: number;
+  parentVisualSize?: number;
 }
 
 // Create procedural texture for planets
@@ -208,17 +209,41 @@ const CelestialBodyComponent = ({
   isSelected,
   useRealisticScale,
   parentPosition = [0, 0, 0],
-  labelSize
+  labelSize,
+  parentVisualSize
 }: CelestialBodyProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const atmosphereRef = useRef<THREE.Mesh>(null);
   const groupRef = useRef<THREE.Group>(null);
   
   const size = getVisualSize(body, useRealisticScale);
-  const position = useMemo(
-    () => getOrbitalPosition(body, date, parentPosition),
-    [body, date, parentPosition]
-  );
+  
+  // Calculate position with collision prevention for moons
+  const position = useMemo(() => {
+    const basePosition = getOrbitalPosition(body, date, parentPosition);
+    
+    // Additional collision prevention for moons
+    if (body.type === 'moon' && parentVisualSize) {
+      const dx = basePosition[0] - parentPosition[0];
+      const dy = basePosition[1] - parentPosition[1];
+      const dz = basePosition[2] - parentPosition[2];
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      
+      // Ensure moon is at least (parentSize + moonSize) * 1.5 away from parent
+      const minDistance = (parentVisualSize + size) * 1.5;
+      
+      if (distance < minDistance && distance > 0) {
+        const scale = minDistance / distance;
+        return [
+          parentPosition[0] + dx * scale,
+          parentPosition[1] + dy * scale,
+          parentPosition[2] + dz * scale
+        ] as [number, number, number];
+      }
+    }
+    
+    return basePosition;
+  }, [body, date, parentPosition, parentVisualSize, size]);
 
   // Create texture once
   const texture = useMemo(() => createProceduralTexture(body), [body]);
@@ -257,7 +282,7 @@ const CelestialBodyComponent = ({
 
   return (
     <group ref={groupRef} position={position}>
-      {/* Planet sphere with texture */}
+      {/* Planet sphere with realistic material */}
       <Sphere
         ref={meshRef}
         args={[size, 64, 64]}
@@ -268,8 +293,10 @@ const CelestialBodyComponent = ({
       >
         <meshStandardMaterial
           map={texture}
-          roughness={0.7}
-          metalness={0.1}
+          roughness={body.type === 'moon' ? 0.9 : 0.7}
+          metalness={0}
+          emissive={body.color}
+          emissiveIntensity={0.02}
         />
       </Sphere>
       
@@ -279,7 +306,7 @@ const CelestialBodyComponent = ({
           <meshBasicMaterial
             color={atmosphereColor}
             transparent
-            opacity={0.15}
+            opacity={0.12}
             side={THREE.BackSide}
           />
         </Sphere>
@@ -293,11 +320,12 @@ const CelestialBodyComponent = ({
             args={[size * 1.3, size * 1.6, 64]}
             rotation={[-Math.PI / 2 + (body.axialTilt * Math.PI) / 180, 0, 0]}
           >
-            <meshBasicMaterial
+            <meshStandardMaterial
               color="#C9A86C"
               transparent
               opacity={0.5}
               side={THREE.DoubleSide}
+              roughness={0.9}
             />
           </Ring>
           {/* Middle ring */}
@@ -305,11 +333,12 @@ const CelestialBodyComponent = ({
             args={[size * 1.6, size * 2.0, 64]}
             rotation={[-Math.PI / 2 + (body.axialTilt * Math.PI) / 180, 0, 0]}
           >
-            <meshBasicMaterial
+            <meshStandardMaterial
               color="#DEB887"
               transparent
               opacity={0.7}
               side={THREE.DoubleSide}
+              roughness={0.9}
             />
           </Ring>
           {/* Outer ring */}
@@ -317,11 +346,12 @@ const CelestialBodyComponent = ({
             args={[size * 2.0, size * 2.4, 64]}
             rotation={[-Math.PI / 2 + (body.axialTilt * Math.PI) / 180, 0, 0]}
           >
-            <meshBasicMaterial
+            <meshStandardMaterial
               color="#A0826D"
               transparent
               opacity={0.4}
               side={THREE.DoubleSide}
+              roughness={0.9}
             />
           </Ring>
         </>
@@ -333,11 +363,12 @@ const CelestialBodyComponent = ({
           args={[size * 1.4, size * 1.8, 64]}
           rotation={[-Math.PI / 2 + (body.axialTilt * Math.PI) / 180, 0, 0]}
         >
-          <meshBasicMaterial
+          <meshStandardMaterial
             color="#AAAAAA"
             transparent
             opacity={0.2}
             side={THREE.DoubleSide}
+            roughness={0.9}
           />
         </Ring>
       )}
