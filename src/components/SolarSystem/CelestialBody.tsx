@@ -12,6 +12,7 @@ interface CelestialBodyProps {
   isSelected: boolean;
   useRealisticScale: boolean;
   parentPosition?: [number, number, number];
+  labelSize: number;
 }
 
 // Create procedural texture for planets
@@ -206,7 +207,8 @@ const CelestialBodyComponent = ({
   onClick,
   isSelected,
   useRealisticScale,
-  parentPosition = [0, 0, 0]
+  parentPosition = [0, 0, 0],
+  labelSize
 }: CelestialBodyProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const atmosphereRef = useRef<THREE.Mesh>(null);
@@ -373,7 +375,10 @@ const CelestialBodyComponent = ({
           userSelect: 'none',
         }}
       >
-        <div className="text-white text-xs font-medium px-2 py-0.5 bg-black/50 rounded backdrop-blur-sm whitespace-nowrap">
+        <div 
+          className="text-white font-medium px-2 py-0.5 bg-black/50 rounded backdrop-blur-sm whitespace-nowrap"
+          style={{ fontSize: `${labelSize}px` }}
+        >
           {body.name}
         </div>
       </Html>

@@ -25,6 +25,8 @@ const Index = () => {
     setShowDwarfPlanets,
     useRealisticScale,
     setUseRealisticScale,
+    labelSize,
+    setLabelSize,
   } = useSolarSystem();
 
   return (
@@ -38,6 +40,7 @@ const Index = () => {
         showOrbits={showOrbits}
         showMoons={showMoons}
         showDwarfPlanets={showDwarfPlanets}
+        labelSize={labelSize}
       />
       
       {/* Header */}
@@ -62,6 +65,8 @@ const Index = () => {
             setShowDwarfPlanets={setShowDwarfPlanets}
             useRealisticScale={useRealisticScale}
             setUseRealisticScale={setUseRealisticScale}
+            labelSize={labelSize}
+            setLabelSize={setLabelSize}
           />
         </div>
       </header>

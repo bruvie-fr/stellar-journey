@@ -1,7 +1,8 @@
-import { Settings, Eye, EyeOff, Orbit, Moon, Globe } from 'lucide-react';
+import { Settings, Eye, EyeOff, Orbit, Moon, Globe, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import {
   Popover,
   PopoverContent,
@@ -17,6 +18,8 @@ interface ControlPanelProps {
   setShowDwarfPlanets: (show: boolean) => void;
   useRealisticScale: boolean;
   setUseRealisticScale: (use: boolean) => void;
+  labelSize: number;
+  setLabelSize: (size: number) => void;
 }
 
 const ControlPanel = ({
@@ -27,7 +30,9 @@ const ControlPanel = ({
   showDwarfPlanets,
   setShowDwarfPlanets,
   useRealisticScale,
-  setUseRealisticScale
+  setUseRealisticScale,
+  labelSize,
+  setLabelSize
 }: ControlPanelProps) => {
   return (
     <Popover>
@@ -96,6 +101,24 @@ const ControlPanel = ({
               id="scale"
               checked={useRealisticScale}
               onCheckedChange={setUseRealisticScale}
+            />
+          </div>
+          
+          <div className="space-y-2 pt-2 border-t border-border/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Type className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm">Label Size</Label>
+              </div>
+              <span className="text-xs text-muted-foreground">{labelSize}px</span>
+            </div>
+            <Slider
+              value={[labelSize]}
+              onValueChange={([value]) => setLabelSize(value)}
+              min={10}
+              max={24}
+              step={1}
+              className="w-full"
             />
           </div>
         </div>
