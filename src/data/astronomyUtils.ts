@@ -7,7 +7,7 @@ export const getMeanAnomaly = (
   epoch: Date = new Date('2000-01-01T12:00:00Z')
 ): number => {
   const daysSinceEpoch = (date.getTime() - epoch.getTime()) / (1000 * 60 * 60 * 24);
-  const meanAnomaly = (360 * daysSinceEpoch) / orbitalPeriod;
+  const meanAnomaly = (360 * daysSinceEpoch) / Math.abs(orbitalPeriod);
   return meanAnomaly % 360;
 };
 
@@ -47,15 +47,18 @@ export const getOrbitalPosition = (
   const trueAnomaly = getTrueAnomaly(eccentricAnomaly, body.eccentricity);
 
   // Calculate distance from focus
+  // Use MOON_DISTANCE scale for moons to make them visible around planets
   const a = body.type === 'moon' 
-    ? body.distanceFromSun * 0.000001 // Convert km to scene units for moons
+    ? body.distanceFromSun * SCALE.MOON_DISTANCE
     : body.distanceFromSun * SCALE.DISTANCE;
   
   const r = a * (1 - body.eccentricity * Math.cos(eccentricAnomaly));
 
   // Calculate position in orbital plane
-  const x = r * Math.cos(trueAnomaly);
-  const z = r * Math.sin(trueAnomaly);
+  // For retrograde orbits (negative period), reverse direction
+  const direction = body.orbitalPeriod < 0 ? -1 : 1;
+  const x = r * Math.cos(trueAnomaly * direction);
+  const z = r * Math.sin(trueAnomaly * direction);
 
   // Apply inclination
   const inclRad = (body.inclination * Math.PI) / 180;

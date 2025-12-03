@@ -21,33 +21,53 @@ export interface CelestialBody {
 
 // Scale factors for visualization
 export const SCALE = {
-  DISTANCE: 30, // AU to scene units
-  SIZE: 0.00001, // km to scene units (will be adjusted for visibility)
-  TIME: 1, // days per second at 1x speed
+  DISTANCE: 15, // AU to scene units (increased for more spacing)
+  SIZE: 0.00001, // km to scene units
+  MOON_DISTANCE: 0.00003, // km to scene units for moons (increased for visibility)
+  TIME: 1,
 };
 
-// Visibility scale multipliers (to make small planets visible)
+// Visibility scale multipliers (reduced to prevent overlapping)
 export const VISIBILITY_SCALE: Record<string, number> = {
-  sun: 0.8,
-  mercury: 400,
-  venus: 200,
-  earth: 200,
-  mars: 300,
-  jupiter: 40,
-  saturn: 50,
-  uranus: 80,
-  neptune: 80,
-  pluto: 600,
-  ceres: 800,
-  eris: 600,
-  makemake: 700,
-  haumea: 700,
-  moon: 500,
-  io: 500,
-  europa: 500,
-  ganymede: 400,
-  callisto: 400,
-  titan: 400,
+  sun: 0.3,
+  mercury: 150,
+  venus: 100,
+  earth: 100,
+  mars: 120,
+  jupiter: 20,
+  saturn: 25,
+  uranus: 40,
+  neptune: 40,
+  pluto: 300,
+  ceres: 400,
+  eris: 300,
+  makemake: 350,
+  haumea: 350,
+  // Earth's Moon
+  moon: 200,
+  // Mars moons
+  phobos: 800,
+  deimos: 900,
+  // Jupiter moons
+  io: 200,
+  europa: 200,
+  ganymede: 150,
+  callisto: 150,
+  // Saturn moons
+  titan: 150,
+  enceladus: 400,
+  mimas: 500,
+  rhea: 250,
+  dione: 300,
+  iapetus: 250,
+  // Uranus moons
+  miranda: 400,
+  ariel: 300,
+  umbriel: 300,
+  titania: 250,
+  oberon: 250,
+  // Neptune moons
+  triton: 200,
 };
 
 export const SUN: CelestialBody = {
@@ -105,7 +125,7 @@ export const PLANETS: CelestialBody[] = [
     mass: 4.867e24,
     distanceFromSun: 0.723,
     orbitalPeriod: 224.7,
-    rotationPeriod: -5832.5, // Retrograde rotation
+    rotationPeriod: -5832.5,
     axialTilt: 177.4,
     temperature: { min: 462, max: 462 },
     eccentricity: 0.0067,
@@ -216,7 +236,7 @@ export const PLANETS: CelestialBody[] = [
     mass: 8.681e25,
     distanceFromSun: 19.191,
     orbitalPeriod: 30687,
-    rotationPeriod: -17.24, // Retrograde
+    rotationPeriod: -17.24,
     axialTilt: 97.77,
     temperature: { min: -224, max: -224 },
     eccentricity: 0.0457,
@@ -369,6 +389,7 @@ export const DWARF_PLANETS: CelestialBody[] = [
 ];
 
 export const MOONS: CelestialBody[] = [
+  // Earth's Moon
   {
     id: 'moon',
     name: 'Moon',
@@ -377,7 +398,7 @@ export const MOONS: CelestialBody[] = [
     color: '#C4C4C4',
     radius: 1737.4,
     mass: 7.342e22,
-    distanceFromSun: 384400, // km from Earth
+    distanceFromSun: 384400,
     orbitalPeriod: 27.32,
     rotationPeriod: 655.7,
     axialTilt: 1.54,
@@ -392,6 +413,54 @@ export const MOONS: CelestialBody[] = [
       'Causes Earth\'s tides'
     ]
   },
+  // Mars moons
+  {
+    id: 'phobos',
+    name: 'Phobos',
+    type: 'moon',
+    parentId: 'mars',
+    color: '#8B7355',
+    radius: 11.267,
+    mass: 1.0659e16,
+    distanceFromSun: 9376,
+    orbitalPeriod: 0.319,
+    rotationPeriod: 7.66,
+    axialTilt: 0,
+    temperature: { min: -40, max: -4 },
+    eccentricity: 0.0151,
+    inclination: 1.093,
+    description: 'Phobos is the larger and closer of Mars\' two moons, destined to crash into Mars in 50 million years.',
+    facts: [
+      'Orbits Mars 3 times per Martian day',
+      'Will crash into Mars or break apart',
+      'Has a large crater called Stickney',
+      'May be a captured asteroid'
+    ]
+  },
+  {
+    id: 'deimos',
+    name: 'Deimos',
+    type: 'moon',
+    parentId: 'mars',
+    color: '#9E8B7D',
+    radius: 6.2,
+    mass: 1.4762e15,
+    distanceFromSun: 23463,
+    orbitalPeriod: 1.263,
+    rotationPeriod: 30.3,
+    axialTilt: 0,
+    temperature: { min: -40, max: -4 },
+    eccentricity: 0.00033,
+    inclination: 0.93,
+    description: 'Deimos is the smaller and farther of Mars\' two moons.',
+    facts: [
+      'Named after Greek god of terror',
+      'Smoother than Phobos',
+      'Slowly spiraling away from Mars',
+      'About 15 km across'
+    ]
+  },
+  // Jupiter moons (Galilean)
   {
     id: 'io',
     name: 'Io',
@@ -484,6 +553,7 @@ export const MOONS: CelestialBody[] = [
       'Potential site for human base'
     ]
   },
+  // Saturn moons
   {
     id: 'titan',
     name: 'Titan',
@@ -505,6 +575,261 @@ export const MOONS: CelestialBody[] = [
       'Has liquid methane lakes',
       'Larger than planet Mercury',
       'Rain, rivers, and seas of methane'
+    ]
+  },
+  {
+    id: 'enceladus',
+    name: 'Enceladus',
+    type: 'moon',
+    parentId: 'saturn',
+    color: '#FFFFFF',
+    radius: 252.1,
+    mass: 1.08e20,
+    distanceFromSun: 238020,
+    orbitalPeriod: 1.37,
+    rotationPeriod: 32.9,
+    axialTilt: 0,
+    temperature: { min: -198, max: -128 },
+    eccentricity: 0.0047,
+    inclination: 0.02,
+    description: 'Enceladus is an icy moon with geysers shooting water into space, a prime target for finding alien life.',
+    facts: [
+      'Has water geysers at south pole',
+      'Brightest object in Solar System',
+      'Has subsurface ocean',
+      'Source of Saturn\'s E ring'
+    ]
+  },
+  {
+    id: 'mimas',
+    name: 'Mimas',
+    type: 'moon',
+    parentId: 'saturn',
+    color: '#C0C0C0',
+    radius: 198.2,
+    mass: 3.75e19,
+    distanceFromSun: 185539,
+    orbitalPeriod: 0.942,
+    rotationPeriod: 22.6,
+    axialTilt: 0,
+    temperature: { min: -209, max: -181 },
+    eccentricity: 0.0196,
+    inclination: 1.53,
+    description: 'Mimas is nicknamed the "Death Star moon" due to its giant Herschel crater.',
+    facts: [
+      'Looks like the Death Star',
+      'Herschel crater is 130 km wide',
+      'Smallest known round moon',
+      'May have subsurface ocean'
+    ]
+  },
+  {
+    id: 'rhea',
+    name: 'Rhea',
+    type: 'moon',
+    parentId: 'saturn',
+    color: '#B8B8B8',
+    radius: 763.8,
+    mass: 2.31e21,
+    distanceFromSun: 527108,
+    orbitalPeriod: 4.52,
+    rotationPeriod: 108.4,
+    axialTilt: 0,
+    temperature: { min: -220, max: -174 },
+    eccentricity: 0.001,
+    inclination: 0.35,
+    description: 'Rhea is Saturn\'s second-largest moon, a cold and airless icy world.',
+    facts: [
+      'May have thin ring system',
+      'Second largest Saturn moon',
+      'Named after Greek Titan',
+      'Heavily cratered surface'
+    ]
+  },
+  {
+    id: 'dione',
+    name: 'Dione',
+    type: 'moon',
+    parentId: 'saturn',
+    color: '#E8E8E8',
+    radius: 561.4,
+    mass: 1.1e21,
+    distanceFromSun: 377396,
+    orbitalPeriod: 2.74,
+    rotationPeriod: 65.7,
+    axialTilt: 0,
+    temperature: { min: -186, max: -186 },
+    eccentricity: 0.0022,
+    inclination: 0.02,
+    description: 'Dione is an icy moon of Saturn with bright ice cliffs and a possible subsurface ocean.',
+    facts: [
+      'Has bright ice cliffs',
+      'May have subsurface ocean',
+      'Discovered in 1684',
+      'Shares orbit with small moons'
+    ]
+  },
+  {
+    id: 'iapetus',
+    name: 'Iapetus',
+    type: 'moon',
+    parentId: 'saturn',
+    color: '#696969',
+    radius: 734.5,
+    mass: 1.81e21,
+    distanceFromSun: 3560820,
+    orbitalPeriod: 79.32,
+    rotationPeriod: 1903.7,
+    axialTilt: 0,
+    temperature: { min: -173, max: -143 },
+    eccentricity: 0.0286,
+    inclination: 15.47,
+    description: 'Iapetus is a two-toned moon with one dark and one bright hemisphere.',
+    facts: [
+      'Has a huge equatorial ridge',
+      'One side is 10x darker',
+      'Third largest Saturn moon',
+      'Named after a Greek Titan'
+    ]
+  },
+  // Uranus moons
+  {
+    id: 'miranda',
+    name: 'Miranda',
+    type: 'moon',
+    parentId: 'uranus',
+    color: '#A9A9A9',
+    radius: 235.8,
+    mass: 6.6e19,
+    distanceFromSun: 129390,
+    orbitalPeriod: 1.41,
+    rotationPeriod: 33.9,
+    axialTilt: 0,
+    temperature: { min: -187, max: -187 },
+    eccentricity: 0.0013,
+    inclination: 4.34,
+    description: 'Miranda is the smallest and innermost of Uranus\' five major moons, with bizarre terrain.',
+    facts: [
+      'Has 20 km high cliffs',
+      'Most geologically diverse moon',
+      'May have been shattered and reformed',
+      'Discovered in 1948'
+    ]
+  },
+  {
+    id: 'ariel',
+    name: 'Ariel',
+    type: 'moon',
+    parentId: 'uranus',
+    color: '#B0B0B0',
+    radius: 578.9,
+    mass: 1.35e21,
+    distanceFromSun: 190900,
+    orbitalPeriod: 2.52,
+    rotationPeriod: 60.5,
+    axialTilt: 0,
+    temperature: { min: -213, max: -213 },
+    eccentricity: 0.0012,
+    inclination: 0.26,
+    description: 'Ariel is the brightest of Uranus\' moons and has the youngest surface.',
+    facts: [
+      'Brightest Uranian moon',
+      'Has canyons and valleys',
+      'Named after a Shakespeare character',
+      'May have had cryovolcanism'
+    ]
+  },
+  {
+    id: 'umbriel',
+    name: 'Umbriel',
+    type: 'moon',
+    parentId: 'uranus',
+    color: '#505050',
+    radius: 584.7,
+    mass: 1.17e21,
+    distanceFromSun: 266000,
+    orbitalPeriod: 4.14,
+    rotationPeriod: 99.5,
+    axialTilt: 0,
+    temperature: { min: -198, max: -198 },
+    eccentricity: 0.0039,
+    inclination: 0.13,
+    description: 'Umbriel is the darkest of Uranus\' major moons.',
+    facts: [
+      'Darkest Uranian moon',
+      'Has a bright ring feature',
+      'Ancient, heavily cratered',
+      'Named after a Pope character'
+    ]
+  },
+  {
+    id: 'titania',
+    name: 'Titania',
+    type: 'moon',
+    parentId: 'uranus',
+    color: '#C8C8C8',
+    radius: 788.4,
+    mass: 3.52e21,
+    distanceFromSun: 435910,
+    orbitalPeriod: 8.71,
+    rotationPeriod: 209,
+    axialTilt: 0,
+    temperature: { min: -203, max: -203 },
+    eccentricity: 0.0011,
+    inclination: 0.34,
+    description: 'Titania is the largest moon of Uranus and the eighth largest moon in the Solar System.',
+    facts: [
+      'Largest Uranian moon',
+      'Has huge canyons',
+      'Named after Shakespeare character',
+      'May have thin CO2 atmosphere'
+    ]
+  },
+  {
+    id: 'oberon',
+    name: 'Oberon',
+    type: 'moon',
+    parentId: 'uranus',
+    color: '#8B8B8B',
+    radius: 761.4,
+    mass: 3.01e21,
+    distanceFromSun: 583520,
+    orbitalPeriod: 13.46,
+    rotationPeriod: 323.1,
+    axialTilt: 0,
+    temperature: { min: -198, max: -198 },
+    eccentricity: 0.0014,
+    inclination: 0.06,
+    description: 'Oberon is the outermost major moon of Uranus, heavily cratered with a dark surface.',
+    facts: [
+      'Second largest Uranian moon',
+      'Has a 6 km high mountain',
+      'Named after fairy king',
+      'Red-tinted craters'
+    ]
+  },
+  // Neptune moon
+  {
+    id: 'triton',
+    name: 'Triton',
+    type: 'moon',
+    parentId: 'neptune',
+    color: '#FFE4C4',
+    radius: 1353.4,
+    mass: 2.14e22,
+    distanceFromSun: 354759,
+    orbitalPeriod: -5.88, // Retrograde
+    rotationPeriod: 141.0,
+    axialTilt: 0,
+    temperature: { min: -235, max: -235 },
+    eccentricity: 0.000016,
+    inclination: 156.885,
+    description: 'Triton is Neptune\'s largest moon, likely a captured Kuiper Belt object orbiting backwards.',
+    facts: [
+      'Only large moon with retrograde orbit',
+      'Has nitrogen geysers',
+      'Coldest known object in Solar System',
+      'Will crash into Neptune eventually'
     ]
   }
 ];

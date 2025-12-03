@@ -15,7 +15,7 @@ const OrbitPath = ({ body, parentPosition = [0, 0, 0], isHighlighted }: OrbitPat
     const orbitPoints: THREE.Vector3[] = [];
     
     const a = body.type === 'moon'
-      ? body.distanceFromSun * 0.000001
+      ? body.distanceFromSun * SCALE.MOON_DISTANCE
       : body.distanceFromSun * SCALE.DISTANCE;
     
     const e = body.eccentricity;
