@@ -1,6 +1,6 @@
 import { Suspense, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Stars } from '@react-three/drei';
 import Sun from './Sun';
 import CelestialBody from './CelestialBody';
 import OrbitPath from './OrbitPath';
@@ -8,7 +8,6 @@ import Starfield from './Starfield';
 import { 
   PLANETS, 
   DWARF_PLANETS, 
-  MOONS, 
   getMoonsForParent 
 } from '@/data/celestialBodies';
 import { getOrbitalPosition } from '@/data/astronomyUtils';
@@ -22,6 +21,14 @@ interface SceneProps {
   showMoons: boolean;
   showDwarfPlanets: boolean;
 }
+
+// Loading component
+const Loader = () => (
+  <mesh>
+    <sphereGeometry args={[1, 32, 32]} />
+    <meshBasicMaterial color="#4DA6FF" wireframe />
+  </mesh>
+);
 
 const SolarSystemScene = ({
   date,
@@ -41,20 +48,34 @@ const SolarSystemScene = ({
   }, [date]);
 
   return (
-    <Canvas className="w-full h-full">
-      <PerspectiveCamera makeDefault position={[0, 50, 100]} fov={60} />
+    <Canvas className="w-full h-full" gl={{ antialias: true, alpha: true }}>
+      <PerspectiveCamera makeDefault position={[0, 80, 150]} fov={60} />
       <OrbitControls
         enablePan
         enableZoom
         enableRotate
         minDistance={5}
-        maxDistance={400}
+        maxDistance={600}
         zoomSpeed={0.5}
+        rotateSpeed={0.5}
+        panSpeed={0.5}
       />
       
-      <ambientLight intensity={0.1} />
+      {/* Ambient light for visibility */}
+      <ambientLight intensity={0.08} />
       
-      <Suspense fallback={null}>
+      {/* Background stars using drei */}
+      <Stars
+        radius={300}
+        depth={60}
+        count={8000}
+        factor={6}
+        saturation={0.1}
+        fade
+        speed={0.5}
+      />
+      
+      <Suspense fallback={<Loader />}>
         <Starfield />
         
         {/* Sun */}
