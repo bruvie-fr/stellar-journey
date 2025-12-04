@@ -160,7 +160,7 @@ const Index = () => {
       )}
 
       {/* Time Controls - Responsive */}
-      <div className={`absolute ${isMobile ? 'bottom-2 left-2 right-2 pb-safe' : 'bottom-4 left-1/2 -translate-x-1/2'} pointer-events-auto z-10`}>
+      <div className={`absolute ${isMobile ? 'bottom-4 left-2 right-2 mb-safe' : 'bottom-4 left-1/2 -translate-x-1/2'} pointer-events-auto z-10`}>
         <TimeControls
           date={date}
           setDate={setDate}
