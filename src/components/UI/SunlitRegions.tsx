@@ -98,14 +98,55 @@ const SunlitRegions = ({ date, isMobile = false }: SunlitRegionsProps) => {
 
         {/* Day/Night Visualization */}
         <div className="mt-2 pt-2 border-t border-border/30">
-          <div className="h-3 rounded-full overflow-hidden flex bg-slate-800">
-            <div 
-              className="bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-400 transition-all duration-300"
-              style={{ 
-                width: '50%',
-                marginLeft: `${((subsolarPoint.longitude + 180) / 360) * 50}%`
-              }}
-            />
+          <div className="h-3 rounded-full overflow-hidden bg-slate-800 relative">
+            {/* Daylight band - render two segments to handle wrap-around */}
+            {(() => {
+              // Center of daylight is at subsolar longitude, spans ~180° (90° each side)
+              const centerPercent = ((subsolarPoint.longitude + 180) / 360) * 100;
+              const halfWidth = 25; // 25% = 90° of longitude
+              
+              const leftEdge = centerPercent - halfWidth;
+              const rightEdge = centerPercent + halfWidth;
+              
+              // Handle wrap-around at edges
+              if (leftEdge < 0) {
+                // Wraps around the left side (180°W)
+                return (
+                  <>
+                    <div 
+                      className="absolute top-0 h-full bg-gradient-to-r from-orange-400 via-yellow-400 to-yellow-400"
+                      style={{ left: 0, width: `${rightEdge}%` }}
+                    />
+                    <div 
+                      className="absolute top-0 h-full bg-gradient-to-l from-orange-400 via-yellow-400 to-yellow-400"
+                      style={{ left: `${100 + leftEdge}%`, width: `${-leftEdge}%` }}
+                    />
+                  </>
+                );
+              } else if (rightEdge > 100) {
+                // Wraps around the right side (180°E)
+                return (
+                  <>
+                    <div 
+                      className="absolute top-0 h-full bg-gradient-to-r from-yellow-400 via-yellow-400 to-orange-400"
+                      style={{ left: `${leftEdge}%`, width: `${100 - leftEdge}%` }}
+                    />
+                    <div 
+                      className="absolute top-0 h-full bg-gradient-to-l from-yellow-400 via-yellow-400 to-orange-400"
+                      style={{ left: 0, width: `${rightEdge - 100}%` }}
+                    />
+                  </>
+                );
+              } else {
+                // No wrap-around needed
+                return (
+                  <div 
+                    className="absolute top-0 h-full bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-400"
+                    style={{ left: `${leftEdge}%`, width: `${halfWidth * 2}%` }}
+                  />
+                );
+              }
+            })()}
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>180°W</span>

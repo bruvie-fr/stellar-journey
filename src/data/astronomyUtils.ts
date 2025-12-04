@@ -234,33 +234,63 @@ export const getSubsolarPoint = (date: Date): { latitude: number; longitude: num
   };
 };
 
-// Region data with longitude ranges
-const REGIONS: { name: string; lonStart: number; lonEnd: number; latStart: number; latEnd: number }[] = [
-  { name: 'Japan', lonStart: 129, lonEnd: 146, latStart: 24, latEnd: 46 },
-  { name: 'Australia', lonStart: 113, lonEnd: 154, latStart: -44, latEnd: -10 },
-  { name: 'Indonesia', lonStart: 95, lonEnd: 141, latStart: -11, latEnd: 6 },
-  { name: 'China', lonStart: 73, lonEnd: 135, latStart: 18, latEnd: 54 },
-  { name: 'India', lonStart: 68, lonEnd: 97, latStart: 6, latEnd: 36 },
-  { name: 'Russia', lonStart: 27, lonEnd: 180, latStart: 41, latEnd: 82 },
-  { name: 'Middle East', lonStart: 25, lonEnd: 63, latStart: 12, latEnd: 42 },
-  { name: 'Europe', lonStart: -10, lonEnd: 40, latStart: 35, latEnd: 72 },
-  { name: 'UK', lonStart: -8, lonEnd: 2, latStart: 50, latEnd: 61 },
-  { name: 'West Africa', lonStart: -18, lonEnd: 16, latStart: 4, latEnd: 28 },
-  { name: 'East Africa', lonStart: 22, lonEnd: 52, latStart: -12, latEnd: 18 },
-  { name: 'South Africa', lonStart: 16, lonEnd: 33, latStart: -35, latEnd: -22 },
-  { name: 'Brazil', lonStart: -74, lonEnd: -34, latStart: -34, latEnd: 6 },
-  { name: 'Argentina', lonStart: -74, lonEnd: -53, latStart: -56, latEnd: -21 },
-  { name: 'Eastern US', lonStart: -87, lonEnd: -66, latStart: 24, latEnd: 49 },
-  { name: 'Central US', lonStart: -105, lonEnd: -87, latStart: 26, latEnd: 49 },
-  { name: 'Western US', lonStart: -125, lonEnd: -105, latStart: 32, latEnd: 49 },
-  { name: 'Canada', lonStart: -141, lonEnd: -52, latStart: 42, latEnd: 84 },
-  { name: 'Mexico', lonStart: -118, lonEnd: -86, latStart: 14, latEnd: 33 },
-  { name: 'New Zealand', lonStart: 166, lonEnd: 179, latStart: -47, latEnd: -34 },
-  { name: 'Hawaii', lonStart: -161, lonEnd: -154, latStart: 18, latEnd: 23 },
-  { name: 'Alaska', lonStart: -180, lonEnd: -130, latStart: 51, latEnd: 72 },
+// Region data with coordinates (center lat/lon for spherical calculation)
+const REGIONS: { name: string; lon: number; lat: number }[] = [
+  // Asia
+  { name: 'Japan', lon: 138, lat: 36 },
+  { name: 'China', lon: 104, lat: 35 },
+  { name: 'India', lon: 79, lat: 21 },
+  { name: 'Indonesia', lon: 118, lat: -2 },
+  { name: 'Bhutan', lon: 90.4, lat: 27.5 },
+  { name: 'Nepal', lon: 84, lat: 28 },
+  { name: 'Bangladesh', lon: 90, lat: 24 },
+  { name: 'Thailand', lon: 101, lat: 13 },
+  { name: 'Vietnam', lon: 106, lat: 16 },
+  { name: 'Philippines', lon: 122, lat: 13 },
+  { name: 'South Korea', lon: 128, lat: 36 },
+  // Oceania
+  { name: 'Australia', lon: 134, lat: -25 },
+  { name: 'New Zealand', lon: 172, lat: -41 },
+  // Europe
+  { name: 'UK', lon: -2, lat: 54 },
+  { name: 'France', lon: 2, lat: 46 },
+  { name: 'Germany', lon: 10, lat: 51 },
+  { name: 'Spain', lon: -4, lat: 40 },
+  { name: 'Italy', lon: 12, lat: 42 },
+  { name: 'Poland', lon: 19, lat: 52 },
+  { name: 'Russia', lon: 100, lat: 60 },
+  // Middle East
+  { name: 'Middle East', lon: 45, lat: 29 },
+  // Africa
+  { name: 'West Africa', lon: -5, lat: 10 },
+  { name: 'East Africa', lon: 37, lat: 1 },
+  { name: 'South Africa', lon: 25, lat: -29 },
+  { name: 'Egypt', lon: 30, lat: 27 },
+  // Americas
+  { name: 'Eastern US', lon: -77, lat: 39 },
+  { name: 'Central US', lon: -95, lat: 39 },
+  { name: 'Western US', lon: -118, lat: 37 },
+  { name: 'Canada', lon: -106, lat: 56 },
+  { name: 'Mexico', lon: -102, lat: 23 },
+  { name: 'Brazil', lon: -52, lat: -14 },
+  { name: 'Argentina', lon: -64, lat: -34 },
+  { name: 'Hawaii', lon: -157, lat: 20 },
+  { name: 'Alaska', lon: -153, lat: 64 },
 ];
 
-// Get regions currently in daylight, twilight, and night
+// Calculate angular distance using Haversine formula (great-circle distance in degrees)
+const getAngularDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const toRad = (deg: number) => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return c * 180 / Math.PI; // Return in degrees
+};
+
+// Get regions currently in daylight, twilight, and night using spherical geometry
 export const getSunlitRegions = (date: Date): { daylight: string[]; twilight: string[]; night: string[] } => {
   const subsolar = getSubsolarPoint(date);
   const daylight: string[] = [];
@@ -268,18 +298,19 @@ export const getSunlitRegions = (date: Date): { daylight: string[]; twilight: st
   const night: string[] = [];
   
   REGIONS.forEach(region => {
-    const regionCenterLon = (region.lonStart + region.lonEnd) / 2;
-    const regionCenterLat = (region.latStart + region.latEnd) / 2;
+    // Calculate great-circle angular distance from subsolar point
+    const angularDist = getAngularDistance(
+      subsolar.latitude, 
+      subsolar.longitude, 
+      region.lat, 
+      region.lon
+    );
     
-    // Calculate angular distance from subsolar point
-    let lonDiff = Math.abs(regionCenterLon - subsolar.longitude);
-    if (lonDiff > 180) lonDiff = 360 - lonDiff;
-    
-    // Simple day/night calculation based on longitude difference
-    // Daylight within ~90° of subsolar longitude, twilight within ~108°
-    if (lonDiff < 75) {
+    // Day/night terminator is at 90° from subsolar point
+    // Civil twilight extends to ~96° (sun 6° below horizon)
+    if (angularDist < 90) {
       daylight.push(region.name);
-    } else if (lonDiff < 100) {
+    } else if (angularDist < 96) {
       twilight.push(region.name);
     } else {
       night.push(region.name);
