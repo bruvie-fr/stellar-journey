@@ -7,9 +7,10 @@ import SunlitRegions from '@/components/UI/SunlitRegions';
 import { useSolarSystem } from '@/hooks/useSolarSystem';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Info } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const Index = () => {
   const {
@@ -38,6 +39,19 @@ const Index = () => {
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSunlitRegions, setShowSunlitRegions] = useState(!isMobile);
+  const [showMobileHint, setShowMobileHint] = useState(false);
+
+  // Show mobile instructions once
+  useEffect(() => {
+    if (isMobile && !localStorage.getItem('mobileHintShown')) {
+      setShowMobileHint(true);
+      const timer = setTimeout(() => {
+        setShowMobileHint(false);
+        localStorage.setItem('mobileHintShown', 'true');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile]);
 
   return (
     <div className="relative w-screen h-screen bg-[#0a0a1a] overflow-hidden">
@@ -98,39 +112,55 @@ const Index = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] bg-background/95 backdrop-blur-xl p-4">
-                <div className="space-y-6 mt-6">
-                  <SearchBar onSelect={(id) => {
-                    handleSelectBody(id);
-                    setMobileMenuOpen(false);
-                  }} />
-                  
-                  <ControlPanel
-                    showOrbits={showOrbits}
-                    setShowOrbits={setShowOrbits}
-                    showMoons={showMoons}
-                    setShowMoons={setShowMoons}
-                    showDwarfPlanets={showDwarfPlanets}
-                    setShowDwarfPlanets={setShowDwarfPlanets}
-                    useRealisticScale={useRealisticScale}
-                    setUseRealisticScale={setUseRealisticScale}
-                    labelSize={labelSize}
-                    setLabelSize={setLabelSize}
-                    isMobile
-                  />
-                  
-                  <div className="pt-4 border-t border-border/30">
-                    <SunlitRegions date={date} isMobile />
+              <SheetContent side="right" className="w-[85vw] bg-background/95 backdrop-blur-xl p-0">
+                <ScrollArea className="h-full">
+                  <div className="space-y-6 p-4 pt-10 pb-safe">
+                    <SearchBar onSelect={(id) => {
+                      handleSelectBody(id);
+                      setMobileMenuOpen(false);
+                    }} />
+                    
+                    <ControlPanel
+                      showOrbits={showOrbits}
+                      setShowOrbits={setShowOrbits}
+                      showMoons={showMoons}
+                      setShowMoons={setShowMoons}
+                      showDwarfPlanets={showDwarfPlanets}
+                      setShowDwarfPlanets={setShowDwarfPlanets}
+                      useRealisticScale={useRealisticScale}
+                      setUseRealisticScale={setUseRealisticScale}
+                      labelSize={labelSize}
+                      setLabelSize={setLabelSize}
+                      isMobile
+                    />
+                    
+                    <div className="pt-4 border-t border-border/30">
+                      <SunlitRegions date={date} isMobile />
+                    </div>
                   </div>
-                </div>
+                </ScrollArea>
               </SheetContent>
             </Sheet>
           </div>
         )}
       </header>
       
+      {/* Mobile Instructions Hint */}
+      {showMobileHint && isMobile && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card/95 backdrop-blur-xl rounded-xl p-4 border border-border/50 shadow-xl z-20 animate-fade-in">
+          <div className="text-center space-y-2">
+            <p className="text-sm font-medium">Welcome!</p>
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>👆 Tap planets for info</p>
+              <p>🤏 Pinch to zoom</p>
+              <p>↔️ Drag to rotate view</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Time Controls - Responsive */}
-      <div className={`absolute ${isMobile ? 'bottom-2 left-2 right-2' : 'bottom-4 left-1/2 -translate-x-1/2'} pointer-events-auto z-10`}>
+      <div className={`absolute ${isMobile ? 'bottom-2 left-2 right-2 pb-safe' : 'bottom-4 left-1/2 -translate-x-1/2'} pointer-events-auto z-10`}>
         <TimeControls
           date={date}
           setDate={setDate}
@@ -156,13 +186,17 @@ const Index = () => {
       {/* Info Panel - Mobile (Bottom Sheet) */}
       {selectedBody && isMobile && (
         <Sheet open={!!selectedBody} onOpenChange={(open) => !open && handleCloseInfo()}>
-          <SheetContent side="bottom" className="h-[70vh] bg-background/95 backdrop-blur-xl rounded-t-2xl">
-            <InfoPanel
-              body={selectedBody}
-              date={date}
-              onClose={handleCloseInfo}
-              isMobile
-            />
+          <SheetContent side="bottom" className="h-[85vh] bg-background/95 backdrop-blur-xl rounded-t-2xl p-0">
+            <ScrollArea className="h-full">
+              <div className="p-4 pb-safe">
+                <InfoPanel
+                  body={selectedBody}
+                  date={date}
+                  onClose={handleCloseInfo}
+                  isMobile
+                />
+              </div>
+            </ScrollArea>
           </SheetContent>
         </Sheet>
       )}
