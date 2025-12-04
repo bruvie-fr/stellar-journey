@@ -49,7 +49,7 @@ const SunlitRegions = ({ date, isMobile = false }: SunlitRegionsProps) => {
             Currently in daylight:
           </p>
           <div className="flex flex-wrap gap-1">
-            {regions.daylight.slice(0, isMobile ? 4 : 6).map((region) => (
+            {regions.daylight.slice(0, isMobile ? 10 : 8).map((region) => (
               <Badge 
                 key={region} 
                 variant="outline" 
@@ -58,6 +58,11 @@ const SunlitRegions = ({ date, isMobile = false }: SunlitRegionsProps) => {
                 {region}
               </Badge>
             ))}
+            {regions.daylight.length > (isMobile ? 10 : 8) && (
+              <Badge variant="outline" className="text-xs bg-yellow-500/5 text-yellow-200/60 border-yellow-500/20">
+                +{regions.daylight.length - (isMobile ? 10 : 8)} more
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -68,7 +73,7 @@ const SunlitRegions = ({ date, isMobile = false }: SunlitRegionsProps) => {
             Twilight zones:
           </p>
           <div className="flex flex-wrap gap-1">
-            {regions.twilight.slice(0, isMobile ? 3 : 4).map((region) => (
+            {regions.twilight.slice(0, isMobile ? 8 : 6).map((region) => (
               <Badge 
                 key={region} 
                 variant="outline" 
@@ -77,6 +82,11 @@ const SunlitRegions = ({ date, isMobile = false }: SunlitRegionsProps) => {
                 {region}
               </Badge>
             ))}
+            {regions.twilight.length > (isMobile ? 8 : 6) && (
+              <Badge variant="outline" className="text-xs bg-orange-500/5 text-orange-200/60 border-orange-500/20">
+                +{regions.twilight.length - (isMobile ? 8 : 6)} more
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -84,7 +94,7 @@ const SunlitRegions = ({ date, isMobile = false }: SunlitRegionsProps) => {
         <div>
           <p className="text-xs text-muted-foreground mb-2">Currently in darkness:</p>
           <div className="flex flex-wrap gap-1">
-            {regions.night.slice(0, isMobile ? 3 : 4).map((region) => (
+            {regions.night.slice(0, isMobile ? 8 : 6).map((region) => (
               <Badge 
                 key={region} 
                 variant="outline" 
@@ -93,6 +103,11 @@ const SunlitRegions = ({ date, isMobile = false }: SunlitRegionsProps) => {
                 {region}
               </Badge>
             ))}
+            {regions.night.length > (isMobile ? 8 : 6) && (
+              <Badge variant="outline" className="text-xs bg-slate-500/5 text-slate-300/60 border-slate-500/20">
+                +{regions.night.length - (isMobile ? 8 : 6)} more
+              </Badge>
+            )}
           </div>
         </div>
 
