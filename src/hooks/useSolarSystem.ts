@@ -29,9 +29,10 @@ export const useSolarSystem = () => {
 
     const interval = setInterval(() => {
       setDate(prevDate => {
-        const newDate = new Date(prevDate);
-        newDate.setDate(newDate.getDate() + speed);
-        return newDate;
+        // Speed is in "days per tick", interval runs 10 times/sec (every 100ms)
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const msToAdd = (speed / 10) * msPerDay;
+        return new Date(prevDate.getTime() + msToAdd);
       });
     }, 100); // Update every 100ms
 
